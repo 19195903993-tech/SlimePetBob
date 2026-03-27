@@ -1,0 +1,10 @@
+{
+  "name": "match3-duel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "5x6 双人消消乐（纯前端独立版）",
+  "scripts": {
+    "dev": "node scripts/server.js",
+    "start": "node scripts/server.js"
+  }
+}
