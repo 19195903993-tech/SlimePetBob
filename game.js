@@ -5,11 +5,11 @@ const UI_THEME_SAVE_KEY = "slime_ui_theme_config_v1";
 const UI_THEME_STYLE_ID = "aiThemeStyle";
 const UI_THEME_PROMPT_LIMIT = 320;
 const FIRST_LOGIN_ADVENTURE_STORY = "风和日丽的一天，你在公司捡到一只蓝坨坨。它好像...可以长大";
-const FIRST_LOGIN_ADVENTURE_IMAGE = "assets/codex_album/story_begin.png";
+const FIRST_LOGIN_ADVENTURE_IMAGE = "./assets/codex_album/story_begin.png";
 const GROWTH_LOVE_ADVENTURE_THRESHOLD_MM = 100;
 const GROWTH_LOVE_ADVENTURE_TITLE = "成长事件";
 const GROWTH_LOVE_ADVENTURE_STORY = "喜欢阿姆，请一键三连投我一票！！";
-const GROWTH_LOVE_ADVENTURE_IMAGE = "assets/codex_album/story_love.png";
+const GROWTH_LOVE_ADVENTURE_IMAGE = "./assets/codex_album/story_love.png";
 const DAY_MS = 86400000;
 const LOG_LIMIT = 7;
 const HISTORY_LIMIT = 5;
@@ -69,7 +69,7 @@ const WILD_EVENT_UNLOCK_MM = {
   camping: 70,
   travel: 90,
 };
-const WILD_EVENT_LOCK_ICON = "assets/codex_album/lock.svg";
+const WILD_EVENT_LOCK_ICON = "./assets/codex_album/lock.svg";
 const FEED_TICK_MS = 10 * 1000;
 const PICKUP_SPAWN_MIN_MS = 5 * 60 * 1000;
 const PICKUP_SPAWN_MAX_MS = 10 * 60 * 1000;
@@ -80,10 +80,10 @@ const PICKUP_DROP_SIZE = 65;
 const PICKUP_COLLISION_SIZE = 58;
 const PICKUP_MIN_DIST = 67;
 const ITEM_DEFS = {
-  item1: { id: "item1", name: "水果", iconPath: "assets/UI/item_1.png", inventoryKey: "item1" },
-  item2: { id: "item2", name: "主食", iconPath: "assets/UI/item_2.png", inventoryKey: "item2" },
-  item3: { id: "item3", name: "饮料", iconPath: "assets/UI/item_3.png", inventoryKey: "item3" },
-  item4: { id: "item4", name: "肥皂", iconPath: "assets/UI/item_4.png", inventoryKey: "cleanse" },
+  item1: { id: "item1", name: "水果", iconPath: "./assets/UI/item_1.png", inventoryKey: "item1" },
+  item2: { id: "item2", name: "主食", iconPath: "./assets/UI/item_2.png", inventoryKey: "item2" },
+  item3: { id: "item3", name: "饮料", iconPath: "./assets/UI/item_3.png", inventoryKey: "item3" },
+  item4: { id: "item4", name: "肥皂", iconPath: "./assets/UI/item_4.png", inventoryKey: "cleanse" },
 };
 const FOOD_ITEM_DEFS = {
   item1: { ...ITEM_DEFS.item1, satietyPerTick: 2, durationMs: 30 * 1000 },
@@ -275,18 +275,18 @@ const STAGES = [
   { t: 1001, n: "闪耀体", d: "高亲密高健康的长期陪伴形态。" },
 ];
 const ALBUM_ITEMS = [
-  { id: "image1", name: "形象1", unlockMm: 500, src: "assets/codex_album/image1.svg" },
-  { id: "image2", name: "形象2", unlockMm: 1000, src: "assets/codex_album/image2.svg" },
+  { id: "image1", name: "形象1", unlockMm: 500, src: "./assets/codex_album/image1.svg" },
+  { id: "image2", name: "形象2", unlockMm: 1000, src: "./assets/codex_album/image2.svg" },
 ];
-const ALBUM_LOCKED_PLACEHOLDER_SRC = "assets/codex_album/imageempty.png";
+const ALBUM_LOCKED_PLACEHOLDER_SRC = "./assets/codex_album/imageempty.png";
 const ADVENTURE_PHOTO_LIMIT = 28;
 const ADVENTURE_STORY_MAX_CHARS = 30;
 const ADVENTURE_PHOTO_SRC_POOL = [
-  "assets/codex_album/story01.png",
-  "assets/codex_album/story02.png",
-  "assets/codex_album/story03.png",
-  "assets/codex_album/story04.png",
-  "assets/codex_album/story05.png",
+  "./assets/codex_album/story01.png",
+  "./assets/codex_album/story02.png",
+  "./assets/codex_album/story03.png",
+  "./assets/codex_album/story04.png",
+  "./assets/codex_album/story05.png",
 ];
 const GEMINI_STORY_PREFIX = ["史莱姆", "它", "小家伙", "旅途中"];
 const GEMINI_STORY_PLACE = ["在云海边", "穿过星屑林", "于薄雾峡谷", "在晚霞湖畔", "于风铃山道"];
@@ -822,7 +822,7 @@ function pickupDropRect(drop) {
 function statusFrameUrl(folder, frame) {
   const mappedFolder = folder === "normal" ? "nomal" : folder;
   const n = String((frame % STATUS_ANIM_FRAMES) + 1).padStart(2, "0");
-  return `assets/slime_expressions/${mappedFolder}/frame_${n}.svg`;
+  return `./assets/slime_expressions/${mappedFolder}/frame_${n}.svg`;
 }
 
 function cooldownRemainMs(name, now = Date.now()) {
@@ -3986,7 +3986,7 @@ function isWildEventUnlocked(name) {
 
 function wildRunnerFrameUrl(index) {
   const seq = WILD_RUNNER_JUMP_FRAME_SEQUENCE[index % WILD_RUNNER_JUMP_FRAME_SEQUENCE.length] || 1;
-  return `assets/slime_expressions/jump/jump_${String(seq).padStart(2, "0")}.png`;
+  return `./assets/slime_expressions/jump/jump_${String(seq).padStart(2, "0")}.png`;
 }
 
 function ensureWildRunnerFrameEl() {
@@ -4262,7 +4262,7 @@ function rollWildRandomEvent(name) {
       const delta = randInt(-5, 5);
       state.intimacy = clamp(state.intimacy + delta, 0, INTIMACY_MAX);
       lines.push(`亲密度${delta >= 0 ? "+" : ""}${delta}`);
-      iconPath = "assets/slime_expressions/smile/frame_01.svg";
+      iconPath = "./assets/slime_expressions/smile/frame_01.svg";
       iconAlt = "亲密度事件";
     }
     const isFirstTravel = Math.max(0, Math.round(num(state.eventCounters?.travel, 0))) === 0;

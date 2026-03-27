@@ -1,6 +1,6 @@
 ﻿@font-face {
   font-family: "Huninn";
-  src: url("assets/font/Huninn-Regular.ttf") format("truetype");
+  src: url("./assets/font/Huninn-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -474,7 +474,7 @@ select {
   height: 96px;
   border: 0;
   border-radius: 0;
-  background: url("assets/UI/item_4.png") center / contain no-repeat;
+  background: url("./assets/UI/item_4.png") center / contain no-repeat;
   color: #2a4c6b;
   display: flex;
   flex-direction: column;
@@ -775,7 +775,7 @@ select {
   height: 112px;
   border: 0;
   border-radius: 0;
-  background: url("assets/UI/eating.png") center / 100% 100% no-repeat;
+  background: url("./assets/UI/eating.png") center / 100% 100% no-repeat;
   box-shadow: none;
   cursor: pointer;
   color: #333d4f;
@@ -907,7 +907,7 @@ select {
   transform: translate(-50%, -50%);
   border-radius: 0;
   border: 0;
-  background: url("assets/UI/PP.png") center / 100% 100% no-repeat;
+  background: url("./assets/UI/PP.png") center / 100% 100% no-repeat;
   box-shadow: none;
   pointer-events: auto;
   cursor: pointer;
@@ -1167,7 +1167,7 @@ select {
   height: 36px;
   border: 0;
   padding: 0;
-  background: url("assets/UI/shit.png") center / contain no-repeat;
+  background: url("./assets/UI/shit.png") center / contain no-repeat;
   border-radius: 0;
   box-shadow: none;
   pointer-events: auto;
@@ -1840,7 +1840,7 @@ select {
   height: 120px;
   border: 0;
   border-radius: 0;
-  background: url("assets/UI/door.png") center / contain no-repeat;
+  background: url("./assets/UI/door.png") center / contain no-repeat;
   box-shadow: none;
   font-size: 24px;
   font-weight: 700;
