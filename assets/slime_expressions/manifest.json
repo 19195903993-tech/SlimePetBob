@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "spriteType": "sequence",
+  "size": {
+    "width": 256,
+    "height": 256
+  },
+  "fps": 12,
+  "frameCount": 12,
+  "expressions": [
+    {
+      "name": "normal",
+      "folder": "nomal",
+      "framePattern": "frame_%02d.svg",
+      "frames": 12,
+      "conditionHint": "Default fallback expression"
+    },
+    {
+      "name": "happy",
+      "folder": "happy",
+      "framePattern": "frame_%02d.svg",
+      "frames": 12,
+      "conditionHint": "intimacy > 35 OR mood > 82"
+    },
+    {
+      "name": "wink",
+      "folder": "wink",
+      "framePattern": "frame_%02d.svg",
+      "frames": 12,
+      "conditionHint": "Tap interaction short override"
+    },
+    {
+      "name": "surprised",
+      "folder": "surprised",
+      "framePattern": "frame_%02d.svg",
+      "frames": 12,
+      "conditionHint": "Tap interaction short override"
+    },
+    {
+      "name": "neutral",
+      "folder": "neutral",
+      "framePattern": "frame_%02d.svg",
+      "frames": 12,
+      "conditionHint": "stamina <= 1"
+    },
+    {
+      "name": "sick",
+      "folder": "sick",
+      "framePattern": "frame_%02d.svg",
+      "frames": 12,
+      "conditionHint": "health < 30"
+    },
+    {
+      "name": "hungry",
+      "folder": "hungry",
+      "framePattern": "frame_%02d.svg",
+      "frames": 12,
+      "conditionHint": "satiety < 25"
+    },
+    {
+      "name": "sad",
+      "folder": "sad",
+      "framePattern": "frame_%02d.svg",
+      "frames": 12,
+      "conditionHint": "mood < 34"
+    }
+  ]
+}

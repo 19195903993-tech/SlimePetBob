@@ -1,0 +1,40 @@
+{
+  "priorityOrder": [
+    {
+      "expression": "sick",
+      "when": "health < 30"
+    },
+    {
+      "expression": "hungry",
+      "when": "satiety < 25"
+    },
+    {
+      "expression": "sad",
+      "when": "mood < 34"
+    },
+    {
+      "expression": "happy",
+      "when": "intimacy > 35 || mood > 82"
+    },
+    {
+      "expression": "neutral",
+      "when": "stamina <= 1"
+    },
+    {
+      "expression": "normal",
+      "when": "default"
+    }
+  ],
+  "interactionOverrides": [
+    {
+      "expression": "wink",
+      "trigger": "tap",
+      "holdMs": 5200
+    },
+    {
+      "expression": "surprised",
+      "trigger": "tap",
+      "holdMs": 5200
+    }
+  ]
+}
