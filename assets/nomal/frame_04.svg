@@ -1,0 +1,31 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_189_1250)">
+<path d="M128 244.8C182.787 244.8 227.2 235.488 227.2 224C227.2 212.513 182.787 203.2 128 203.2C73.2134 203.2 28.8 212.513 28.8 224C28.8 235.488 73.2134 244.8 128 244.8Z" fill="#263A59" fill-opacity="0.2"/>
+<g filter="url(#filter0_df_189_1250)">
+<path d="M6.3999 160C6.3999 63.9998 57.5999 20.7998 128 20.7998C198.4 20.7998 249.6 63.9998 249.6 160C249.6 209.6 204.8 235.2 128 235.2C51.1999 235.2 6.3999 209.6 6.3999 160Z" fill="url(#paint0_radial_189_1250)"/>
+</g>
+<path d="M51.2 163.2C61.8039 163.2 70.4 158.185 70.4 152C70.4 145.814 61.8039 140.8 51.2 140.8C40.5961 140.8 32 145.814 32 152C32 158.185 40.5961 163.2 51.2 163.2Z" fill="#F67C95" fill-opacity="0.42"/>
+<path d="M204.8 163.2C215.404 163.2 224 158.185 224 152C224 145.814 215.404 140.8 204.8 140.8C194.196 140.8 185.6 145.814 185.6 152C185.6 158.185 194.196 163.2 204.8 163.2Z" fill="#F67C95" fill-opacity="0.42"/>
+<path d="M79.9998 130.4C88.3945 130.4 95.1998 123.595 95.1998 115.2C95.1998 106.805 88.3945 100 79.9998 100C71.6051 100 64.7998 106.805 64.7998 115.2C64.7998 123.595 71.6051 130.4 79.9998 130.4Z" fill="#2E3D5E"/>
+<path d="M176 130.4C184.395 130.4 191.2 123.595 191.2 115.2C191.2 106.805 184.395 100 176 100C167.605 100 160.8 106.805 160.8 115.2C160.8 123.595 167.605 130.4 176 130.4Z" fill="#2E3D5E"/>
+</g>
+<defs>
+<filter id="filter0_df_189_1250" x="-16.0001" y="-1.60019" width="288" height="259.2" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14.4"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.11 0 0 0 0 0.19 0 0 0 0 0.32 0 0 0 0.38 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_189_1250"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_189_1250" result="shape"/>
+<feGaussianBlur stdDeviation="11.2" result="effect2_foregroundBlur_189_1250"/>
+</filter>
+<radialGradient id="paint0_radial_189_1250" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(8518.4 4737.6) scale(17024 15008)">
+<stop stop-color="#F8FCFF"/>
+<stop offset="0.32" stop-color="#D2E9FF"/>
+<stop offset="1" stop-color="#6EA7E6"/>
+</radialGradient>
+<clipPath id="clip0_189_1250">
+<rect width="256" height="256" fill="white"/>
+</clipPath>
+</defs>
+</svg>
