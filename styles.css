@@ -34,7 +34,8 @@ html,
 body {
   margin: 0;
   width: 100%;
-  height: 100%;
+  height: 100dvh;
+  min-height: 100vh;
   overflow: hidden;
   font-family: "Huninn", "Microsoft YaHei", "PingFang SC", sans-serif;
   color: var(--ink);
@@ -66,19 +67,19 @@ select {
 
 .viewport {
   width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  height: 100dvh;
+  min-height: 100vh;
+  position: relative;
   overflow: hidden;
-  padding-top: 8px;
 }
 
 .game-frame {
   width: 750px;
   height: 1334px;
-  transform-origin: top center;
-  position: relative;
+  transform-origin: top left;
+  position: absolute;
+  left: 0;
+  top: 0;
   border-radius: 44px;
   background:
     radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.5), transparent 34%),
@@ -214,6 +215,10 @@ select {
 .days-card strong {
   font-size: 58px;
   line-height: 1;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  justify-self: end;
 }
 
 .days-card span {
@@ -994,7 +999,10 @@ select {
   cursor: grab;
   pointer-events: auto;
   touch-action: none;
-  transform: translate(-50%, -50%) scale(var(--slime-scale, 1)) rotate(var(--slime-tilt, 0deg));
+  transform:
+    translate(-50%, -50%)
+    scale(calc(var(--slime-scale, 1) * var(--slime-stretch-x, 1)), calc(var(--slime-scale, 1) * var(--slime-stretch-y, 1)))
+    rotate(var(--slime-tilt, 0deg));
   transform-origin: center center;
   transition: box-shadow 120ms ease;
   will-change: transform;
@@ -2314,6 +2322,7 @@ select {
 .gm-btn.gm-row-7 { top: 392px; }
 .gm-btn.gm-row-8 { top: 454px; }
 .gm-btn.gm-row-9 { top: 516px; }
+.gm-btn.gm-row-10 { top: 578px; }
 
 /* Watercolor hand-drawn visual baseline */
 .hud,

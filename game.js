@@ -96,20 +96,20 @@ const HEART_SVG_PATH = "M12 21.4L10.6 20.1C5.5 15.4 2 12.2 2 8.4C2 5.3 4.4 3 7.4
 const SVG_NS = "http://www.w3.org/2000/svg";
 const PHYSICS = {
   gravity: 3200,
-  dragX: 2.4,
-  dragY: 0.35,
-  bounceX: 0.72,
+  dragX: 1.95,
+  dragY: 0.24,
+  bounceX: 0.82,
   bounceTop: 0.62,
-  bounceBottom: 0.58,
-  floorFriction: 0.9,
-  minBounceVy: 160,
-  groundDrag: 12,
+  bounceBottom: 0.66,
+  floorFriction: 0.93,
+  minBounceVy: 145,
+  groundDrag: 8.5,
   restFramesToSleep: 4,
   stopVx: 20,
   stopVy: 30,
   floorSnapEps: 1.2,
   wallSnapEps: 1,
-  launchSpeedMin: 120,
+  launchSpeedMin: 150,
 };
 const UI_THEME_ALLOWED_TOKENS = new Set([
   "frameBg",
@@ -449,6 +449,7 @@ const refs = {
   gmCleanseItemBtn: document.getElementById("gmCleanseItemBtn"),
   gmOpenWaterGameBtn: document.getElementById("gmOpenWaterGameBtn"),
   gmResetDay1Btn: document.getElementById("gmResetDay1Btn"),
+  gmSizePlus1000Btn: document.getElementById("gmSizePlus1000Btn"),
 };
 
 const mkCounters = () => Object.fromEntries(Object.keys(EVENT_META).map((k) => [k, 0]));
@@ -550,7 +551,18 @@ const runtime = {
     vy: 0,
     lastDragEndAt: 0,
   },
-  inertia: { active: false, rafId: 0, vx: 0, vy: 0, lastTs: 0, groundedFrames: 0, grounded: false },
+  inertia: {
+    active: false,
+    rafId: 0,
+    vx: 0,
+    vy: 0,
+    lastTs: 0,
+    startedAt: 0,
+    bounceCount: 0,
+    groundedFrames: 0,
+    grounded: false,
+    lowEnergyFrames: 0,
+  },
   bathing: {
     active: false,
     pointerId: -1,
@@ -1621,14 +1633,32 @@ function record(category, key, historyText) {
 
 function fitScreen() {
   const vv = window.visualViewport;
-  const viewportW = vv ? vv.width : window.innerWidth;
-  const viewportH = vv ? vv.height : window.innerHeight;
-  const safePadX = 16;
-  const safePadY = 16;
-  const availW = Math.max(1, viewportW - safePadX);
-  const availH = Math.max(1, viewportH - safePadY);
+  const innerW = Math.max(1, window.innerWidth || DESIGN_WIDTH);
+  const innerH = Math.max(1, window.innerHeight || DESIGN_HEIGHT);
+  const docW = Math.max(1, document.documentElement?.clientWidth || innerW);
+  const docH = Math.max(1, document.documentElement?.clientHeight || innerH);
+  let vvW = Number.POSITIVE_INFINITY;
+  let vvH = Number.POSITIVE_INFINITY;
+  if (vv) {
+    vvW = Math.max(1, vv.width);
+    vvH = Math.max(1, vv.height);
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    // Some embedded browsers may report visualViewport in physical pixels.
+    if (vvW > innerW * 1.2) vvW /= dpr;
+    if (vvH > innerH * 1.2) vvH /= dpr;
+  }
+  const viewportW = Math.max(1, Math.min(innerW, docW, vvW));
+  const viewportH = Math.max(1, Math.min(innerH, docH, vvH));
+  const safePadX = 8;
+  const safePadY = 8;
+  const availW = Math.max(1, viewportW - safePadX * 2);
+  const availH = Math.max(1, viewportH - safePadY * 2);
   const scale = Math.max(0.1, Math.min(availW / DESIGN_WIDTH, availH / DESIGN_HEIGHT));
-  refs.frame.style.transform = `scale(${scale})`;
+  const frameW = DESIGN_WIDTH * scale;
+  const frameH = DESIGN_HEIGHT * scale;
+  const offsetX = (viewportW - frameW) / 2;
+  const offsetY = (viewportH - frameH) / 2;
+  refs.frame.style.transform = `translate(${offsetX.toFixed(2)}px, ${offsetY.toFixed(2)}px) scale(${scale.toFixed(6)})`;
 }
 
 function stageInfo() {
@@ -3390,10 +3420,26 @@ function maybeShowFirstLoginAdventureModal() {
   return openAdventureModalCustom(FIRST_LOGIN_ADVENTURE_STORY, FIRST_LOGIN_ADVENTURE_IMAGE);
 }
 
+function fitDaysValueNoWrap() {
+  if (!refs.daysValue) return;
+  const el = refs.daysValue;
+  const parent = el.parentElement;
+  if (!parent) return;
+
+  const maxWidth = Math.max(1, parent.clientWidth - 6);
+  let fontSize = 58;
+  el.style.fontSize = `${fontSize}px`;
+  while (fontSize > 22 && el.scrollWidth > maxWidth) {
+    fontSize -= 1;
+    el.style.fontSize = `${fontSize}px`;
+  }
+}
+
 function render() {
   normalizeStats();
   refs.petName.textContent = state.name;
   refs.daysValue.textContent = `${companionDays()}天`;
+  fitDaysValueNoWrap();
   refs.staminaValue.textContent = `${Math.round(state.stamina)}/${STAMINA_MAX}`;
   refs.sizeValue.textContent = `大小${Math.round(state.sizeMm)}mm`;
   const growthCoeff = growthRateCoefficient();
@@ -3449,6 +3495,10 @@ function render() {
   if (refs.gmResetDay1Btn) {
     refs.gmResetDay1Btn.classList.toggle("hidden", !runtime.gmVisible);
     refs.gmResetDay1Btn.textContent = "GM 重置回初始(第1天)";
+  }
+  if (refs.gmSizePlus1000Btn) {
+    refs.gmSizePlus1000Btn.classList.toggle("hidden", !runtime.gmVisible);
+    refs.gmSizePlus1000Btn.textContent = `GM 增加大小+1000 (${Math.round(num(state.sizeMm, MIN_SIZE_MM))}mm)`;
   }
   if (state.viewMode !== "observe") renderCodex();
   syncAdventureModalUi();
@@ -3757,6 +3807,22 @@ function onGmResetDay1Click() {
   saveState();
 }
 
+function onGmSizePlus1000Click() {
+  const gain = 1000;
+  state.sizeMm = Math.max(MIN_SIZE_MM, num(state.sizeMm, MIN_SIZE_MM) + gain);
+  state.maxSizeReachedMm = Math.max(num(state.maxSizeReachedMm, state.sizeMm), state.sizeMm);
+  refreshSizeAndStage();
+  showSizeGainFx(gain);
+
+  const line = "GM指令：大小+1000mm。";
+  say(line, 1500);
+  addHistoryTriggeredSpeech(line);
+  addLog(line, true);
+  addHistory("GM指令：大小+1000mm");
+  render();
+  saveState();
+}
+
 function shiftFastForwardDeadlines(offsetMs) {
   const shift = Math.round(num(offsetMs, 0));
   if (!shift) return;
@@ -3859,6 +3925,7 @@ function onGlobalKeyDown(event) {
   if (refs.gmCleanseItemBtn) refs.gmCleanseItemBtn.classList.toggle("hidden", !runtime.gmVisible);
   if (refs.gmOpenWaterGameBtn) refs.gmOpenWaterGameBtn.classList.toggle("hidden", !runtime.gmVisible);
   if (refs.gmResetDay1Btn) refs.gmResetDay1Btn.classList.toggle("hidden", !runtime.gmVisible);
+  if (refs.gmSizePlus1000Btn) refs.gmSizePlus1000Btn.classList.toggle("hidden", !runtime.gmVisible);
 }
 
 function onGlobalKeyUp(event) {
@@ -4653,9 +4720,14 @@ function stopInertia() {
   runtime.inertia.rafId = 0;
   runtime.inertia.vx = 0;
   runtime.inertia.vy = 0;
+  runtime.inertia.startedAt = 0;
+  runtime.inertia.bounceCount = 0;
   runtime.inertia.groundedFrames = 0;
   runtime.inertia.grounded = false;
+  runtime.inertia.lowEnergyFrames = 0;
   refs.slime.style.setProperty("--slime-tilt", "0deg");
+  refs.slime.style.setProperty("--slime-stretch-x", "1");
+  refs.slime.style.setProperty("--slime-stretch-y", "1");
   syncMotionOverlayVisibility();
 }
 
@@ -4665,7 +4737,10 @@ function startInertia(vx, vy) {
   runtime.inertia.vx = vx * 1000;
   runtime.inertia.vy = vy * 1000;
   runtime.inertia.lastTs = performance.now();
+  runtime.inertia.startedAt = runtime.inertia.lastTs;
+  runtime.inertia.bounceCount = 0;
   runtime.inertia.groundedFrames = 0;
+  runtime.inertia.lowEnergyFrames = 0;
   syncMotionOverlayVisibility();
   const b0 = slimeBounds();
   runtime.inertia.grounded = Math.abs(state.slime.y - b0.maxY) <= PHYSICS.floorSnapEps && Math.abs(runtime.inertia.vy) <= PHYSICS.stopVy;
@@ -4706,12 +4781,29 @@ function startInertia(vx, vy) {
 
     if (state.slime.y >= b.maxY - PHYSICS.floorSnapEps) {
       state.slime.y = b.maxY;
-      if (!wasGrounded && runtime.inertia.vy > PHYSICS.minBounceVy) {
-        runtime.inertia.grounded = false;
-        runtime.inertia.vy = -Math.abs(runtime.inertia.vy) * PHYSICS.bounceBottom;
-        runtime.inertia.vx *= PHYSICS.floorFriction;
-        runtime.inertia.groundedFrames = 0;
+      const impactVy = Math.abs(runtime.inertia.vy);
+      if (!wasGrounded && impactVy > PHYSICS.minBounceVy && runtime.inertia.bounceCount < 4) {
+        // Bounce gets softer every landing; after a few landings it should settle quickly.
+        runtime.inertia.bounceCount += 1;
+        const impactNorm = clamp((impactVy - PHYSICS.stopVy) / (PHYSICS.minBounceVy * 1.5), 0, 1);
+        const decayByCount = Math.pow(0.68, Math.max(0, runtime.inertia.bounceCount - 1));
+        const bounceRatio = PHYSICS.bounceBottom * (0.3 + impactNorm * 0.62) * decayByCount;
+        const reboundVy = impactVy * bounceRatio;
+        const shouldSettle =
+          runtime.inertia.bounceCount >= 3
+          && reboundVy <= PHYSICS.minBounceVy * 0.96;
+        if (shouldSettle) {
+          runtime.inertia.vy = 0;
+          runtime.inertia.grounded = true;
+          runtime.inertia.groundedFrames = wasGrounded ? runtime.inertia.groundedFrames + 1 : 1;
+        } else {
+          runtime.inertia.grounded = false;
+          runtime.inertia.vy = -reboundVy;
+          runtime.inertia.vx *= PHYSICS.floorFriction;
+          runtime.inertia.groundedFrames = 0;
+        }
       } else {
+        runtime.inertia.bounceCount = Math.max(runtime.inertia.bounceCount, 4);
         runtime.inertia.vy = 0;
         runtime.inertia.grounded = true;
         runtime.inertia.groundedFrames = wasGrounded ? runtime.inertia.groundedFrames + 1 : 1;
@@ -4720,6 +4812,28 @@ function startInertia(vx, vy) {
       runtime.inertia.grounded = false;
       runtime.inertia.groundedFrames = 0;
     }
+
+    const nearFloor = state.slime.y >= b.maxY - PHYSICS.floorSnapEps;
+    const lowEnergy =
+      Math.abs(runtime.inertia.vx) <= PHYSICS.stopVx * 1.5
+      && Math.abs(runtime.inertia.vy) <= Math.max(PHYSICS.stopVy * 2.5, PHYSICS.minBounceVy * 0.85);
+    runtime.inertia.lowEnergyFrames = nearFloor && lowEnergy
+      ? runtime.inertia.lowEnergyFrames + 1
+      : 0;
+
+    let stretchX = 1;
+    let stretchY = 1;
+    if (nearFloor) {
+      const t = clamp(Math.abs(runtime.inertia.vy) / 500, 0, 0.24);
+      stretchX = 1 + t;
+      stretchY = 1 - t * 0.9;
+    } else {
+      const t = clamp(Math.abs(runtime.inertia.vy) / 860, 0, 0.14);
+      stretchX = 1 - t * 0.52;
+      stretchY = 1 + t;
+    }
+    refs.slime.style.setProperty("--slime-stretch-x", stretchX.toFixed(3));
+    refs.slime.style.setProperty("--slime-stretch-y", stretchY.toFixed(3));
 
     refs.slime.style.setProperty("--slime-tilt", `${clamp(runtime.inertia.vx / 120, -14, 14).toFixed(2)}deg`);
     renderSlime();
@@ -4730,6 +4844,22 @@ function startInertia(vx, vy) {
 
     if (runtime.inertia.grounded && runtime.inertia.groundedFrames >= PHYSICS.restFramesToSleep && Math.abs(runtime.inertia.vx) < PHYSICS.stopVx) {
       stopInertia();
+      pauseAutoMotion(2200);
+      saveState();
+      return;
+    }
+
+    if (
+      runtime.inertia.lowEnergyFrames >= 2
+      || (
+        nearFloor
+        && runtime.inertia.startedAt > 0
+        && (ts - runtime.inertia.startedAt) > 4200
+      )
+    ) {
+      state.slime.y = b.maxY;
+      stopInertia();
+      pauseAutoMotion(2200);
       saveState();
       return;
     }
@@ -4970,6 +5100,7 @@ function bindEvents() {
   if (refs.gmCleanseItemBtn) refs.gmCleanseItemBtn.addEventListener("click", onGmCleanseItemClick);
   if (refs.gmOpenWaterGameBtn) refs.gmOpenWaterGameBtn.addEventListener("click", onGmOpenWaterGameClick);
   if (refs.gmResetDay1Btn) refs.gmResetDay1Btn.addEventListener("click", onGmResetDay1Click);
+  if (refs.gmSizePlus1000Btn) refs.gmSizePlus1000Btn.addEventListener("click", onGmSizePlus1000Click);
   refs.modeButtons.forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
   refs.actionButtons.forEach((b) => b.addEventListener("click", () => homeAction(b.dataset.action)));
   refs.eventButtons.forEach((b) => b.addEventListener("click", (event) => wildEvent(b.dataset.event, event)));
