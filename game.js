@@ -31,7 +31,7 @@ const BATHING_MOVE_MIN_DIST = 0.45;
 const BATHING_MOVE_GRACE_MS = 220;
 const BATHING_PROGRESS_GAIN = 1.3;
 const BATHING_PROGRESS_DIST_BONUS = 1.2;
-const WATER_GAME_UNLOCK_MM = 80;
+const WATER_GAME_UNLOCK_MM = 60;
 const WATER_GAME_DRINK_GAIN_MM = 8;
 const WATER_GAME_FORCE_DRINK_COUNT = 5;
 const WATER_GAME_COOLDOWN_OPTIONS_MINUTES = [10, 30, 60];
@@ -47,8 +47,8 @@ const POOP_MAX_INTERVAL_MS = 10 * 60 * 1000;
 const WILD_RANDOM_EVENT_CHANCE = 0.55;
 const WILD_TRAVEL_ADVENTURE_CHANCE = 0.45;
 const WILD_EVENT_DURATION_MS = {
-  hotspring: 90 * 1000,
-  farming: 90 * 1000,
+  hotspring: 5 * 1000,
+  farming: 5 * 1000,
   camping: 2 * 60 * 1000,
   travel: 3 * 60 * 1000,
 };
@@ -60,8 +60,8 @@ const WILD_RUNNER_JUMP_FRAME_SEQUENCE = [
   11, 10, 9, 8, 7, 6, 5, 4, 3, 2,
 ];
 const WILD_EVENT_HINT = {
-  hotspring: "1.5分钟，健康+3~5，清除肮脏",
-  farming: "1.5分钟，饱食+3~5，清洁-3",
+  hotspring: "5秒，健康+3~5，清除肮脏",
+  farming: "5秒，饱食+3~5，清洁-3",
   camping: "2分钟，主食+1，饱食+10",
   travel: "3分钟，大小+10mm，饱食-10",
 };
@@ -74,6 +74,8 @@ const FEED_TICK_MS = 10 * 1000;
 const PICKUP_SPAWN_MIN_MS = 5 * 60 * 1000;
 const PICKUP_SPAWN_MAX_MS = 10 * 60 * 1000;
 const PICKUP_MAX_DROPS = 10;
+const BGM_SRC = "./assets/music/sound.mp3";
+const BGM_VOLUME = 0.28;
 const GM_FAST_FORWARD_HOLD_MS = 1000;
 const GM_FAST_FORWARD_SECONDS = 3 * 60;
 const PICKUP_DROP_SIZE = 65;
@@ -143,6 +145,8 @@ const EVENT_META = {
 
 const DEFAULT_SPEECH_CONFIG = {
   auto: {
+    tutorial_hold_g: "长嗯G键，快速生长。",
+    tutorial_tap_me: "戳我戳我。",
     critical_sick: "呜呜呜~不想打针",
     dirty_active: "想洗个澡，身上黏黏的-—-",
     satiety_low: "宝宝肚肚打雷了",
@@ -254,6 +258,8 @@ function sayEventLowPriority(key, fallbackText, fallbackHoldMs = 2200, vars = {}
   if (runtime.speechTimer || runtime.bathing.active) return false;
   const currentAuto = speechAuto();
   const blockingAutoSpeech = new Set([
+    autoSpeechText("tutorial_hold_g", "长嗯G键，快速生长。"),
+    autoSpeechText("tutorial_tap_me", "戳我戳我。"),
     autoSpeechText("critical_sick", "呜呜呜~不想打针"),
     autoSpeechText("dirty_active", "想洗个澡，身上黏黏的-—-"),
     autoSpeechText("satiety_low", "宝宝肚肚打雷了"),
@@ -287,6 +293,19 @@ const ADVENTURE_PHOTO_SRC_POOL = [
   "./assets/codex_album/story03.png",
   "./assets/codex_album/story04.png",
   "./assets/codex_album/story05.png",
+];
+const AWAY_RUMOR_MAX_CHARS = 10;
+const AWAY_RUMOR_FALLBACKS = [
+  "今天心情好",
+  "我去探险啦",
+  "回来有惊喜",
+  "去吹吹风先",
+  "想看看远方",
+  "去找好吃的",
+  "我会想你哦",
+  "今天超有劲",
+  "帮你捡礼物",
+  "去和云散步",
 ];
 const GEMINI_STORY_PREFIX = ["史莱姆", "它", "小家伙", "旅途中"];
 const GEMINI_STORY_PLACE = ["在云海边", "穿过星屑林", "于薄雾峡谷", "在晚霞湖畔", "于风铃山道"];
@@ -405,6 +424,7 @@ const refs = {
   homeAwayMask: document.getElementById("homeAwayMask"),
   pickupDropLayer: document.getElementById("pickupDropLayer"),
   feedTrayWrap: document.getElementById("feedTrayWrap"),
+  feedGuide: document.getElementById("feedGuide"),
   feedPlateBtn: document.getElementById("feedPlateBtn"),
   feedPlateCore: document.getElementById("feedPlateCore"),
   feedPlateLabel: document.getElementById("feedPlateLabel"),
@@ -458,18 +478,33 @@ const mkCooldowns = () => ({ hotspring: 0, farming: 0, camping: 0, travel: 0 });
 const mkItems = () => ({ food: 0, cleanse: 0, item1: 2, item2: 2, item3: 2 });
 const mkTray = () => ({ activeItemId: "", remainMs: 0, tickCarryMs: 0 });
 const mkWildTask = () => ({ name: "", startedAt: 0, endsAt: 0 });
+const mkTutorialState = () => ({
+  gmGrowHintDone: false,
+  tapHintDone: false,
+  feedGuideDone: false,
+  firstPickupBurstDone: false,
+});
 const mkWaterGameState = () => ({
   unlocked: false,
   successCount: 0,
   nextTriggerAt: 0,
   cooldownMinutes: WATER_GAME_COOLDOWN_DEFAULT_MINUTES,
 });
+function sanitizeTutorialState(input, fallback = mkTutorialState()) {
+  const src = (input && typeof input === "object") ? input : {};
+  return {
+    gmGrowHintDone: Boolean(src.gmGrowHintDone ?? fallback.gmGrowHintDone),
+    tapHintDone: Boolean(src.tapHintDone ?? fallback.tapHintDone),
+    feedGuideDone: Boolean(src.feedGuideDone ?? fallback.feedGuideDone),
+    firstPickupBurstDone: Boolean(src.firstPickupBurstDone ?? fallback.firstPickupBurstDone),
+  };
+}
 const nextPoopDelayMs = () => POOP_MIN_INTERVAL_MS + Math.random() * (POOP_MAX_INTERVAL_MS - POOP_MIN_INTERVAL_MS);
 const mkPickupDrops = () => [];
 const nextPickupDelayMs = () => PICKUP_SPAWN_MIN_MS + Math.random() * (PICKUP_SPAWN_MAX_MS - PICKUP_SPAWN_MIN_MS);
 
 const baseState = {
-  version: 12,
+  version: 13,
   name: "史莱姆1",
   createdAt: Date.now(),
   lastTickAt: Date.now(),
@@ -509,6 +544,9 @@ const baseState = {
   pickupDrops: mkPickupDrops(),
   nextPickupSpawnAt: Date.now() + nextPickupDelayMs(),
   wildTask: mkWildTask(),
+  awayRumorText: "",
+  awayRumorSource: "local",
+  tutorial: mkTutorialState(),
   waterGame: mkWaterGameState(),
   growthLoveAdventureShown: false,
   maxStageReached: 0,
@@ -536,6 +574,9 @@ const runtime = {
     previewConfig: null,
     appliedConfig: null,
   },
+  awayRumor: {
+    requestId: 0,
+  },
   drag: {
     active: false,
     pointerId: -1,
@@ -559,6 +600,8 @@ const runtime = {
     lastTs: 0,
     startedAt: 0,
     bounceCount: 0,
+    stretchX: 1,
+    stretchY: 1,
     groundedFrames: 0,
     grounded: false,
     lowEnergyFrames: 0,
@@ -1123,6 +1166,25 @@ function randomGeminiAdventureStory() {
   return story.length > ADVENTURE_STORY_MAX_CHARS ? story.slice(0, ADVENTURE_STORY_MAX_CHARS) : story;
 }
 
+function sanitizeAwayRumorText(input) {
+  const raw = String(input || "").replace(/\s+/g, "").trim();
+  if (!raw) return "";
+  const chars = Array.from(raw);
+  const sliced = chars.slice(0, AWAY_RUMOR_MAX_CHARS).join("");
+  return sliced.replace(/[。！!？?]+$/g, "");
+}
+
+function randomAwayRumorFallback() {
+  const idx = randInt(0, AWAY_RUMOR_FALLBACKS.length - 1);
+  return sanitizeAwayRumorText(AWAY_RUMOR_FALLBACKS[idx]);
+}
+
+function awayMaskText() {
+  const rumor = sanitizeAwayRumorText(state.awayRumorText);
+  if (!rumor) return "史莱姆出门了。";
+  return `史莱姆出门了。留言：${rumor}`;
+}
+
 function pickAdventurePhotoSrc(existingPhotos = state.adventurePhotos) {
   const counts = new Map();
   ADVENTURE_PHOTO_SRC_POOL.forEach((src) => counts.set(src, 0));
@@ -1164,8 +1226,37 @@ let state = loadState();
 const sound = {
   ctx: null,
   bus: null,
+  bgm: null,
+  ensureBgm() {
+    if (this.bgm) return this.bgm;
+    try {
+      const audio = new Audio(BGM_SRC);
+      audio.preload = "auto";
+      audio.loop = true;
+      audio.volume = BGM_VOLUME;
+      audio.setAttribute("playsinline", "true");
+      this.bgm = audio;
+    } catch {
+      this.bgm = null;
+    }
+    return this.bgm;
+  },
+  syncBgm() {
+    const bgm = this.ensureBgm();
+    if (!bgm) return;
+    if (!state.soundEnabled || document.hidden) {
+      if (!bgm.paused) bgm.pause();
+      return;
+    }
+    if (!bgm.paused && !bgm.ended) return;
+    const p = bgm.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  },
   ensure() {
-    if (!state.soundEnabled) return false;
+    if (!state.soundEnabled) {
+      this.syncBgm();
+      return false;
+    }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return false;
     if (!this.ctx) {
@@ -1181,6 +1272,7 @@ const sound = {
       }
     }
     if (this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
+    this.syncBgm();
     return true;
   },
   tone(f = 440, d = 0.1, type = "sine", g = 0.02, delay = 0, to = null) {
@@ -1264,13 +1356,14 @@ function loadState() {
       items: { ...base.items, ...(parsed.items || {}) },
       tray: { ...base.tray, ...(parsed.tray || {}) },
       wildTask: { ...base.wildTask, ...(parsed.wildTask || {}) },
+      tutorial: { ...base.tutorial, ...(parsed.tutorial || {}) },
       waterGame: { ...base.waterGame, ...(parsed.waterGame || {}) },
       logs: Array.isArray(parsed.logs) && parsed.logs.length ? parsed.logs.slice(0, LOG_LIMIT) : base.logs,
       history: normHistory(parsed.history, base.history),
       adventurePhotos: normalizeAdventurePhotos(parsed.adventurePhotos, base.adventurePhotos),
     };
     const rawVersion = Math.round(num(parsed.version, 0));
-    s.version = 12;
+    s.version = 13;
     s.currentScene = s.currentScene === "wild" ? "wild" : "home";
     s.viewMode = s.viewMode === "codex" ? "codex" : "observe";
     s.soundEnabled = typeof s.soundEnabled === "boolean" ? s.soundEnabled : true;
@@ -1336,12 +1429,21 @@ function loadState() {
     s.wildTask.startedAt = Math.max(0, Math.round(num(s.wildTask?.startedAt, 0)));
     s.wildTask.endsAt = Math.max(0, Math.round(num(s.wildTask?.endsAt, 0)));
     if (!s.wildTask.name || s.wildTask.endsAt <= s.wildTask.startedAt) s.wildTask = mkWildTask();
+    s.awayRumorText = sanitizeAwayRumorText(s.awayRumorText);
+    s.awayRumorSource = s.awayRumorSource === "ai" ? "ai" : "local";
+    s.tutorial = sanitizeTutorialState(s.tutorial, base.tutorial);
     s.waterGame = (s.waterGame && typeof s.waterGame === "object") ? s.waterGame : mkWaterGameState();
     s.waterGame.unlocked = Boolean(s.waterGame.unlocked);
     s.waterGame.successCount = Math.max(0, Math.round(num(s.waterGame.successCount, 0)));
     s.waterGame.nextTriggerAt = Math.max(0, Math.round(num(s.waterGame.nextTriggerAt, 0)));
     s.waterGame.cooldownMinutes = sanitizeWaterCooldownMinutes(s.waterGame.cooldownMinutes);
     s.growthLoveAdventureShown = Boolean(s.growthLoveAdventureShown);
+    if (rawVersion < 13) {
+      s.tutorial.gmGrowHintDone = true;
+      s.tutorial.tapHintDone = true;
+      s.tutorial.feedGuideDone = true;
+      s.tutorial.firstPickupBurstDone = true;
+    }
     if (s.waterGame.nextTriggerAt > Date.now() + (365 * DAY_MS)) s.waterGame.nextTriggerAt = Date.now() + waterCooldownMs(s.waterGame.cooldownMinutes);
     s.adventurePhotos = normalizeAdventurePhotos(parsed.adventurePhotos, base.adventurePhotos);
     if (s.currentScene !== "wild") s.wildActionDone = false;
@@ -1533,6 +1635,56 @@ function clearUiThemeConfig(clearSaved = true) {
   syncAiThemeUi();
 }
 
+async function fetchGeminiAwayRumor(eventName = "") {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 6000);
+  try {
+    const response = await fetch("/api/gemini/away-rumor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        eventName: String(eventName || ""),
+        mood: Math.round(clamp(num(state.mood, 0))),
+        intimacy: Math.round(clamp(num(state.intimacy, 0), 0, INTIMACY_MAX)),
+        satiety: Math.round(clamp(num(state.satiety, 0))),
+        health: Math.round(clamp(num(state.health, 0))),
+      }),
+      signal: controller.signal,
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload || payload.ok !== true) {
+      const code = payload && typeof payload.error === "string" ? payload.error : `http_${response.status}`;
+      throw new Error(code);
+    }
+    const rumor = sanitizeAwayRumorText(payload.rumor);
+    if (!rumor) throw new Error("gemini_empty_rumor");
+    return rumor;
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+function startAwayRumorGeneration(eventName) {
+  const fallback = sanitizeAwayRumorText(randomAwayRumorFallback());
+  state.awayRumorText = fallback || "我去探险啦";
+  state.awayRumorSource = "local";
+
+  const requestId = (runtime.awayRumor.requestId || 0) + 1;
+  runtime.awayRumor.requestId = requestId;
+
+  fetchGeminiAwayRumor(eventName).then((rumor) => {
+    if (requestId !== runtime.awayRumor.requestId) return;
+    if (!isWildTaskActive()) return;
+    if (String(state.wildTask?.name || "") !== String(eventName || "")) return;
+    const aiRumor = sanitizeAwayRumorText(rumor);
+    if (!aiRumor) return;
+    state.awayRumorText = aiRumor;
+    state.awayRumorSource = "ai";
+    render();
+    saveState();
+  }).catch(() => {});
+}
+
 async function fetchGeminiUiThemeConfig(promptText) {
   const prompt = String(promptText || "").trim().slice(0, UI_THEME_PROMPT_LIMIT);
   const controller = new AbortController();
@@ -1709,7 +1861,9 @@ function normalizeStats() {
   if (!state.items || typeof state.items !== "object") state.items = mkItems();
   if (!state.tray || typeof state.tray !== "object") state.tray = mkTray();
   if (!state.wildTask || typeof state.wildTask !== "object") state.wildTask = mkWildTask();
+  if (!state.tutorial || typeof state.tutorial !== "object") state.tutorial = mkTutorialState();
   if (!state.eventCooldowns || typeof state.eventCooldowns !== "object") state.eventCooldowns = mkCooldowns();
+  state.tutorial = sanitizeTutorialState(state.tutorial);
   Object.keys(mkItems()).forEach((k) => { state.items[k] = Math.max(0, Math.round(num(state.items[k], 0))); });
   Object.keys(mkCooldowns()).forEach((k) => { state.eventCooldowns[k] = Math.max(0, Math.round(num(state.eventCooldowns[k], 0))); });
   state.tray.activeItemId = FOOD_ITEM_DEFS[state.tray.activeItemId] ? state.tray.activeItemId : "";
@@ -1725,6 +1879,8 @@ function normalizeStats() {
   state.wildTask.startedAt = Math.max(0, Math.round(num(state.wildTask.startedAt, 0)));
   state.wildTask.endsAt = Math.max(0, Math.round(num(state.wildTask.endsAt, 0)));
   if (!state.wildTask.name || state.wildTask.endsAt <= state.wildTask.startedAt) state.wildTask = mkWildTask();
+  state.awayRumorText = sanitizeAwayRumorText(state.awayRumorText);
+  state.awayRumorSource = state.awayRumorSource === "ai" ? "ai" : "local";
   if (!state.waterGame || typeof state.waterGame !== "object") state.waterGame = mkWaterGameState();
   state.waterGame.unlocked = Boolean(state.waterGame.unlocked);
   state.waterGame.successCount = Math.max(0, Math.round(num(state.waterGame.successCount, 0)));
@@ -1772,6 +1928,8 @@ function normalizeStats() {
 }
 
 function speechAuto() {
+  if (!state.tutorial?.gmGrowHintDone) return autoSpeechText("tutorial_hold_g", "长嗯G键，快速生长。");
+  if (!state.tutorial?.tapHintDone) return autoSpeechText("tutorial_tap_me", "戳我戳我。");
   if (isCriticalSick()) return autoSpeechText("critical_sick", "呜呜呜~不想打针");
   if (isDirtyActive()) return autoSpeechText("dirty_active", "想洗个澡，身上黏黏的-—-");
   if (state.satiety < 25) return autoSpeechText("satiety_low", "宝宝肚肚打雷了");
@@ -2001,6 +2159,7 @@ function renderFoodTray() {
   if (!refs.feedTrayWrap || !refs.feedPlateBtn) return;
   const visible = state.currentScene === "home" && state.viewMode === "observe" && !runtime.bathing.active && !isHomeAwayActive();
   refs.feedTrayWrap.classList.toggle("hidden", !visible);
+  if (refs.feedGuide) refs.feedGuide.classList.toggle("hidden", !visible || Boolean(state.tutorial?.feedGuideDone));
   if (!visible) {
     closeFoodList();
     if (refs.foodListPanel) refs.foodListPanel.classList.add("hidden");
@@ -2074,15 +2233,22 @@ function onFeedPlateClick(event) {
   if (state.currentScene !== "home" || state.viewMode !== "observe" || isHomeAwayActive()) return;
   event.preventDefault();
   event.stopPropagation();
+  let tutorialChanged = false;
+  if (state.tutorial && !state.tutorial.feedGuideDone) {
+    state.tutorial.feedGuideDone = true;
+    tutorialChanged = true;
+  }
   const active = trayActiveDef();
   if (active) {
     closeFoodList();
     sayEvent("food_plate_busy", "{foodName}还没吃完呢×", 2200, { foodName: active.name });
     renderFoodTray();
+    if (tutorialChanged) saveState();
     return;
   }
   runtime.foodListOpen = true;
   renderFoodTray();
+  if (tutorialChanged) saveState();
 }
 
 function onFoodListClick(event) {
@@ -2112,6 +2278,7 @@ function onFoodListClick(event) {
 }
 
 function onGlobalPointerDown(event) {
+  sound.ensure();
   if (runtime.foodListOpen) {
     if (!(refs.feedTrayWrap && refs.feedTrayWrap.contains(event.target))) {
       closeFoodList();
@@ -2968,15 +3135,19 @@ function renderPoop() {
 function renderSlime() {
   const p = clampSlimePos(state.slime.x, state.slime.y);
   state.slime = p;
-  refs.slime.style.left = `${p.x}px`;
-  refs.slime.style.top = `${p.y}px`;
+  refs.slime.style.left = `${p.x.toFixed(2)}px`;
+  refs.slime.style.top = `${p.y.toFixed(2)}px`;
   refs.slime.style.setProperty("--slime-scale", slimeScale().toFixed(3));
-  refs.slime.dataset.expression = expressionAuto();
+  const nextExpression = expressionAuto();
+  if (refs.slime.dataset.expression !== nextExpression) refs.slime.dataset.expression = nextExpression;
   const away = isHomeAwayActive();
   refs.slime.classList.toggle("hidden", away);
-  if (refs.homeAwayMask) refs.homeAwayMask.classList.toggle("hidden", !away);
+  if (refs.homeAwayMask) {
+    refs.homeAwayMask.classList.toggle("hidden", !away);
+    refs.homeAwayMask.textContent = away ? awayMaskText() : "史莱姆出门了。";
+  }
   if (!away) {
-    positionSpeechBubble();
+    if (!runtime.drag.active && !runtime.inertia.active) positionSpeechBubble();
     if (!runtime.drag.active && !runtime.inertia.active) refs.speechBubble.classList.remove("hidden");
   }
   syncMotionOverlayVisibility();
@@ -3420,6 +3591,25 @@ function maybeShowFirstLoginAdventureModal() {
   return openAdventureModalCustom(FIRST_LOGIN_ADVENTURE_STORY, FIRST_LOGIN_ADVENTURE_IMAGE);
 }
 
+function maybeTriggerFirstLoginPickupBurst() {
+  if (!state.tutorial || state.tutorial.firstPickupBurstDone) return false;
+  if (Date.now() < num(state.createdAt, Date.now()) + 60 * 1000) return false;
+  if (state.currentScene !== "home" || state.viewMode !== "observe" || isHomeAwayActive()) return false;
+  normalizePickupState(state);
+  const slots = Math.max(0, PICKUP_MAX_DROPS - state.pickupDrops.length);
+  const targetCount = Math.min(2, slots);
+  let spawned = 0;
+  for (let i = 0; i < targetCount; i += 1) {
+    if (spawnRandomPickupDrop(state)) spawned += 1;
+  }
+  state.tutorial.firstPickupBurstDone = true;
+  if (spawned > 0) {
+    addLog(`新手奖励：上方区域生成了${spawned}个道具泡泡。`, true);
+    addHistory(`新手事件：上方区域生成${spawned}个道具泡泡`);
+  }
+  return spawned > 0;
+}
+
 function fitDaysValueNoWrap() {
   if (!refs.daysValue) return;
   const el = refs.daysValue;
@@ -3449,6 +3639,7 @@ function render() {
   renderIntimacyStars();
   renderMode();
   renderScene();
+  maybeTriggerFirstLoginPickupBurst();
   maybeTriggerWaterGame();
   renderPickupDrops();
   renderPoop();
@@ -3642,8 +3833,16 @@ function setMode(mode) {
 }
 
 function toggleSound() {
-  if (state.soundEnabled) { sound.play("toggleOff"); state.soundEnabled = false; }
-  else { state.soundEnabled = true; sound.ensure(); sound.play("toggleOn"); }
+  if (state.soundEnabled) {
+    sound.play("toggleOff");
+    state.soundEnabled = false;
+    sound.syncBgm();
+  } else {
+    state.soundEnabled = true;
+    sound.ensure();
+    sound.play("toggleOn");
+    sound.syncBgm();
+  }
   render();
   saveState();
 }
@@ -3874,6 +4073,10 @@ function startGmFastForwardHold() {
   runtime.gmFastForward.holdTimer = window.setTimeout(() => {
     runtime.gmFastForward.holdTimer = 0;
     if (!runtime.gmFastForward.pressed) return;
+    if (state.tutorial && !state.tutorial.gmGrowHintDone) {
+      state.tutorial.gmGrowHintDone = true;
+      saveState();
+    }
     runtime.gmFastForward.active = true;
     runGmFastForwardStep();
     runtime.gmFastForward.repeatTimer = window.setInterval(() => {
@@ -4481,6 +4684,7 @@ function wildEvent(name, triggerEvent = null) {
     startedAt: now,
     endsAt: now + durationMs,
   };
+  startAwayRumorGeneration(name);
 
   addLog(`开始野外事件：${EVENT_META[name]}。体力-1，倒计时${formatRemain(durationMs)}。`, true);
   addHistory(`野外事件开始：${EVENT_META[name]}`);
@@ -4722,6 +4926,8 @@ function stopInertia() {
   runtime.inertia.vy = 0;
   runtime.inertia.startedAt = 0;
   runtime.inertia.bounceCount = 0;
+  runtime.inertia.stretchX = 1;
+  runtime.inertia.stretchY = 1;
   runtime.inertia.groundedFrames = 0;
   runtime.inertia.grounded = false;
   runtime.inertia.lowEnergyFrames = 0;
@@ -4739,6 +4945,8 @@ function startInertia(vx, vy) {
   runtime.inertia.lastTs = performance.now();
   runtime.inertia.startedAt = runtime.inertia.lastTs;
   runtime.inertia.bounceCount = 0;
+  runtime.inertia.stretchX = 1;
+  runtime.inertia.stretchY = 1;
   runtime.inertia.groundedFrames = 0;
   runtime.inertia.lowEnergyFrames = 0;
   syncMotionOverlayVisibility();
@@ -4821,19 +5029,22 @@ function startInertia(vx, vy) {
       ? runtime.inertia.lowEnergyFrames + 1
       : 0;
 
-    let stretchX = 1;
-    let stretchY = 1;
+    let targetStretchX = 1;
+    let targetStretchY = 1;
     if (nearFloor) {
       const t = clamp(Math.abs(runtime.inertia.vy) / 500, 0, 0.24);
-      stretchX = 1 + t;
-      stretchY = 1 - t * 0.9;
+      targetStretchX = 1 + t;
+      targetStretchY = 1 - t * 0.9;
     } else {
       const t = clamp(Math.abs(runtime.inertia.vy) / 860, 0, 0.14);
-      stretchX = 1 - t * 0.52;
-      stretchY = 1 + t;
+      targetStretchX = 1 - t * 0.52;
+      targetStretchY = 1 + t;
     }
-    refs.slime.style.setProperty("--slime-stretch-x", stretchX.toFixed(3));
-    refs.slime.style.setProperty("--slime-stretch-y", stretchY.toFixed(3));
+    const stretchLerp = clamp(dtSec * 16, 0.16, 0.42);
+    runtime.inertia.stretchX += (targetStretchX - runtime.inertia.stretchX) * stretchLerp;
+    runtime.inertia.stretchY += (targetStretchY - runtime.inertia.stretchY) * stretchLerp;
+    refs.slime.style.setProperty("--slime-stretch-x", runtime.inertia.stretchX.toFixed(3));
+    refs.slime.style.setProperty("--slime-stretch-y", runtime.inertia.stretchY.toFixed(3));
 
     refs.slime.style.setProperty("--slime-tilt", `${clamp(runtime.inertia.vx / 120, -14, 14).toFixed(2)}deg`);
     renderSlime();
@@ -5023,6 +5234,9 @@ function onSlimeClick() {
   if (performance.now() - num(runtime.bathing.completedAt, 0) < 260) return;
   if (runtime.inertia.active) return;
   if (runtime.drag.moved) { runtime.drag.moved = false; return; }
+  if (state.tutorial?.gmGrowHintDone && state.tutorial && !state.tutorial.tapHintDone) {
+    state.tutorial.tapHintDone = true;
+  }
   cycleExpression();
 }
 
@@ -5148,6 +5362,7 @@ function bindEvents() {
   window.addEventListener("blur", stopGmFastForwardHold);
   document.addEventListener("pointerdown", onGlobalPointerDown);
   document.addEventListener("visibilitychange", () => {
+    sound.syncBgm();
     if (document.hidden) { stopGmFastForwardHold(); saveState(); return; }
     applyOfflineProgress();
     render();
@@ -5174,6 +5389,7 @@ function init() {
   state.slime = clampSlimePos(state.slime.x, state.slime.y);
   if (state.viewMode === "observe" && state.currentScene === "home") settleSlimeToHomeBottom();
   bindEvents();
+  sound.syncBgm();
   startAutoMotion();
   render();
   if (maybeShowFirstLoginAdventureModal()) {

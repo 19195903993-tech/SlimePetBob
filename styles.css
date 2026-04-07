@@ -345,15 +345,16 @@ select {
   transform: translateX(-50%);
   min-width: 0;
   width: fit-content;
-  max-width: min(72%, 420px);
+  max-width: calc(100% - 28px);
   padding: 10px 14px;
   border-radius: 16px;
   border: 1px solid rgba(68, 78, 95, 0.25);
   background: rgba(255, 255, 255, 0.88);
   font-size: 20px;
   text-align: center;
-  white-space: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   box-shadow: 0 10px 20px rgba(44, 54, 71, 0.1);
   z-index: 3;
 }
@@ -775,6 +776,41 @@ select {
   pointer-events: auto;
 }
 
+.feed-guide {
+  position: absolute;
+  right: 6px;
+  bottom: 118px;
+  width: 120px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.feed-guide-arrow {
+  font-size: 30px;
+  line-height: 1;
+  color: #6f5844;
+  animation: feed-guide-bob 900ms ease-in-out infinite alternate;
+}
+
+.feed-guide-text {
+  font-size: 20px;
+  line-height: 1.1;
+  color: #6f5844;
+  padding: 6px 10px;
+  border: 2px solid rgba(126, 97, 75, 0.45);
+  border-radius: 999px;
+  background: rgba(255, 247, 232, 0.9);
+  white-space: nowrap;
+}
+
+@keyframes feed-guide-bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(6px); }
+}
+
 .feed-plate-btn {
   width: 132px;
   height: 112px;
@@ -1000,7 +1036,7 @@ select {
   pointer-events: auto;
   touch-action: none;
   transform:
-    translate(-50%, -50%)
+    translate3d(-50%, -50%, 0)
     scale(calc(var(--slime-scale, 1) * var(--slime-stretch-x, 1)), calc(var(--slime-scale, 1) * var(--slime-stretch-y, 1)))
     rotate(var(--slime-tilt, 0deg));
   transform-origin: center center;

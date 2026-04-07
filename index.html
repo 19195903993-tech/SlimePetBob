@@ -70,6 +70,10 @@
         </section>
         <div class="pickup-drop-layer" id="pickupDropLayer" aria-hidden="true" data-layer="scene/home/drop-zone/pickup-items"></div>
         <div class="feed-tray-wrap" id="feedTrayWrap" data-layer="scene/home/feed/tray-wrap">
+          <div class="feed-guide hidden" id="feedGuide" aria-hidden="true" data-layer="scene/home/feed/guide">
+            <span class="feed-guide-text" data-layer="scene/home/feed/guide/text">点击喂食</span>
+            <span class="feed-guide-arrow" data-layer="scene/home/feed/guide/arrow">↓</span>
+          </div>
           <button class="feed-plate-btn" id="feedPlateBtn" type="button" aria-haspopup="true" aria-expanded="false" data-layer="scene/home/feed/plate-button">
             <span class="feed-plate-core" id="feedPlateCore" data-layer="scene/home/feed/plate-core">
               <span class="feed-plate-item hidden" id="feedPlateItem" aria-hidden="true" data-layer="scene/home/feed/plate-item-icon"></span>
@@ -102,11 +106,11 @@
         <div class="event-grid" data-layer="scene/wild/event-grid">
           <button class="event-card" data-event="hotspring" data-layer="scene/wild/event-card/hotspring">
             <strong data-layer="scene/wild/event-card/hotspring/title">泡温泉</strong>
-            <span data-layer="scene/wild/event-card/hotspring/desc">1.5分钟，健康+3~5，清除肮脏</span>
+            <span data-layer="scene/wild/event-card/hotspring/desc">5秒，健康+3~5，清除肮脏</span>
           </button>
           <button class="event-card" data-event="farming" data-layer="scene/wild/event-card/farming">
             <strong data-layer="scene/wild/event-card/farming/title">务农</strong>
-            <span data-layer="scene/wild/event-card/farming/desc">1.5分钟，饱食+3~5，清洁-3</span>
+            <span data-layer="scene/wild/event-card/farming/desc">5秒，饱食+3~5，清洁-3</span>
           </button>
           <button class="event-card" data-event="camping" data-layer="scene/wild/event-card/camping">
             <strong data-layer="scene/wild/event-card/camping/title">露营</strong>
