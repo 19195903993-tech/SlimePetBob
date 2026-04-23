@@ -1,249 +1,90 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>史莱姆电子宠物</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>魔法精灵队伍管理原型</title>
+  <link rel="stylesheet" href="prototype.css" />
 </head>
 <body>
-  <div class="viewport" data-layer="app/viewport">
-    <main class="game-frame" id="gameFrame" aria-label="750x1334 电子养宠物" data-layer="app/frame/root">
-      <header class="hud" data-layer="hud/top">
-        <div class="pet-card" data-layer="hud/top/pet-card">
-          <div class="pet-card-content" data-layer="hud/top/pet-card/content">
-            <div class="pet-name-row" data-layer="hud/top/pet-card/name-row">
-              <h1 id="petName" data-layer="hud/top/pet-card/name">史莱姆1</h1>
-              <strong class="size-inline" id="sizeValue" data-layer="hud/top/pet-card/size">大小120mm</strong>
-            </div>
-            <div class="growth-rate-row" aria-label="生长速率" data-layer="hud/top/pet-card/growth-rate">
-              <span class="growth-rate-label" data-layer="hud/top/pet-card/growth-rate/label">生长速率</span>
-              <span class="growth-rate-track" aria-hidden="true" data-layer="hud/top/pet-card/growth-rate/track">
-                <span class="growth-rate-fill" id="growthRateFill" data-layer="hud/top/pet-card/growth-rate/fill"></span>
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="days-card" data-layer="hud/top/days-card">
-          <strong id="daysValue" data-layer="hud/top/days-card/value">1天</strong>
-          <span data-layer="hud/top/days-card/label">陪伴</span>
-        </div>
+  <div class="app" role="application" aria-label="魔法精灵队伍管理原型">
+    <div class="magic-overlay" aria-hidden="true"></div>
+
+    <aside class="panel team-panel">
+      <header class="team-header">
+        <p class="panel-sub">动态文本区域</p>
+        <h1 id="teamTitle">队伍 1</h1>
       </header>
 
-      <section class="status-board" data-layer="hud/status-board">
-        <div class="intimacy-row" data-layer="hud/status-board/intimacy-row">
-          <span data-layer="hud/status-board/intimacy-row/label">亲密度</span>
-          <div class="heart-list" id="intimacyHearts" aria-label="亲密度" data-layer="hud/status-board/intimacy-row/hearts"></div>
-        </div>
-        <div class="stats-text" data-layer="hud/status-board/stats-row">
-          <p data-layer="hud/status-board/stats-row/stamina">体力 <strong id="staminaValue">5/5</strong></p>
-          <p data-layer="hud/status-board/stats-row/satiety">饱食 <strong id="satietyValue">70%</strong></p>
-          <p data-layer="hud/status-board/stats-row/health">健康 <strong id="healthValue">86%</strong></p>
-        </div>
-      </section>
-
-      <section class="scene scene-home" id="homeScene" data-layer="scene/home/root">
-        <div class="speech-bubble" id="speechBubble" data-layer="scene/home/overlay/speech-bubble">你好呀，今天也一起玩吧。</div>
-        <div class="home-away-mask hidden" id="homeAwayMask" data-layer="scene/home/overlay/away-mask">史莱姆出门了。</div>
-        <div class="bath-hud hidden" id="bathHud" aria-live="polite" data-layer="scene/home/overlay/bath-hud">
-          <p class="bath-hud-title" data-layer="scene/home/overlay/bath-hud/title">划动肥皂涂抹史莱姆</p>
-          <div class="bath-progress-track" aria-hidden="true" data-layer="scene/home/overlay/bath-hud/progress-track">
-            <div class="bath-progress-fill" id="bathProgressFill" data-layer="scene/home/overlay/bath-hud/progress-fill"></div>
-          </div>
-        </div>
-        <img class="bath-soap hidden" id="bathSoapIcon" src="./assets/UI/soap.png" alt="肥皂图标" draggable="false" data-layer="scene/home/item/soap-icon" />
-        <button class="sick-heal-btn hidden" id="sickHealBtn" type="button" data-layer="scene/home/action/sick-heal-btn">打针</button>
-        <button class="dirty-bath-btn hidden" id="dirtyBathBtn" type="button" data-layer="scene/home/action/dirty-bath-btn">
-          <span class="dirty-bath-label" data-layer="scene/home/action/dirty-bath-btn/label">洗澡</span>
-          <span class="dirty-bath-count" id="dirtyBathCount" data-layer="scene/home/action/dirty-bath-btn/count">x0</span>
-        </button>
-        <section class="water-game-popup hidden" id="waterGamePopup" aria-live="polite" data-layer="scene/home/minigame/water-popup">
-          <img class="water-game-bottle" src="./assets/UI/water.png" alt="喝水瓶" draggable="false" data-layer="scene/home/minigame/water-popup/bottle" />
-          <div class="water-game-actions" id="waterGameActions" data-layer="scene/home/minigame/water-popup/actions">
-            <button class="water-setting-trigger" id="waterSettingBtn" type="button" aria-haspopup="dialog" aria-expanded="false" data-layer="scene/home/minigame/water-popup/actions/setting-trigger">
-              <span class="water-setting-trigger-icon" aria-hidden="true" data-layer="scene/home/minigame/water-popup/actions/setting-trigger/icon">⚙</span>
-              <span class="water-setting-trigger-label" data-layer="scene/home/minigame/water-popup/actions/setting-trigger/label">喝水提醒</span>
-            </button>
-            <button class="water-game-btn water-game-btn-deny" id="waterDenyBtn" type="button" data-layer="scene/home/minigame/water-popup/actions/deny-btn">不喝</button>
-            <button class="water-game-btn water-game-btn-drink" id="waterDrinkBtn" type="button" data-layer="scene/home/minigame/water-popup/actions/drink-btn">喝</button>
-          </div>
-        </section>
-        <div class="pickup-drop-layer" id="pickupDropLayer" aria-hidden="true" data-layer="scene/home/drop-zone/pickup-items"></div>
-        <div class="feed-tray-wrap" id="feedTrayWrap" data-layer="scene/home/feed/tray-wrap">
-          <div class="feed-guide hidden" id="feedGuide" aria-hidden="true" data-layer="scene/home/feed/guide">
-            <span class="feed-guide-text" data-layer="scene/home/feed/guide/text">点击喂食</span>
-            <span class="feed-guide-arrow" data-layer="scene/home/feed/guide/arrow">↓</span>
-          </div>
-          <button class="feed-plate-btn" id="feedPlateBtn" type="button" aria-haspopup="true" aria-expanded="false" data-layer="scene/home/feed/plate-button">
-            <span class="feed-plate-core" id="feedPlateCore" data-layer="scene/home/feed/plate-core">
-              <span class="feed-plate-item hidden" id="feedPlateItem" aria-hidden="true" data-layer="scene/home/feed/plate-item-icon"></span>
-              <span class="feed-plate-label" id="feedPlateLabel" data-layer="scene/home/feed/plate-label">喂食</span>
-            </span>
-            <span class="feed-plate-timer hidden" id="feedPlateTimer" data-layer="scene/home/feed/plate-timer">00:00</span>
-          </button>
-          <div class="food-list hidden" id="foodListPanel" role="menu" aria-label="食物道具列表" data-layer="scene/home/feed/food-list-panel"></div>
-        </div>
-        <div class="fx-layer" id="homeFxLayer" aria-hidden="true" data-layer="scene/home/fx-layer"></div>
-        <div class="slime-layer" id="slimeLayer" data-layer="scene/home/slime-layer">
-          <button class="slime pre-init" id="slime" type="button" aria-label="点击或拖动史莱姆" data-layer="scene/home/slime/root">
-            <img class="slime-seq-frame" id="slimeSeqFrame" alt="" draggable="false" data-layer="scene/home/slime/sprite-seq-frame" />
-            <span class="eye eye-left" data-layer="scene/home/slime/face/eye-left"></span>
-            <span class="eye eye-right" data-layer="scene/home/slime/face/eye-right"></span>
-            <span class="mouth" data-layer="scene/home/slime/face/mouth"></span>
-            <span class="blush blush-left" data-layer="scene/home/slime/face/blush-left"></span>
-            <span class="blush blush-right" data-layer="scene/home/slime/face/blush-right"></span>
-          </button>
-        </div>
-        <div class="poop-area" id="poopArea" aria-label="便便区域" data-layer="scene/home/drop-zone/poop-zone"></div>
-        <div class="home-actions" data-layer="scene/home/action-row">
-          <button class="action-btn hidden" data-action="chat" data-layer="scene/home/action/chat-btn">聊天</button>
-        </div>
-      </section>
-
-      <section class="scene scene-wild hidden" id="wildScene" data-layer="scene/wild/root">
-        <div class="fx-layer" id="wildFxLayer" aria-hidden="true" data-layer="scene/wild/fx-layer"></div>
-        <p class="wild-tip" data-layer="scene/wild/instruction-tip">选择活动后开始倒计时，完成即可结算奖励</p>
-        <div class="event-grid" data-layer="scene/wild/event-grid">
-          <button class="event-card" data-event="hotspring" data-layer="scene/wild/event-card/hotspring">
-            <strong data-layer="scene/wild/event-card/hotspring/title">泡温泉</strong>
-            <span data-layer="scene/wild/event-card/hotspring/desc">5秒，健康+3~5，清除肮脏</span>
-          </button>
-          <button class="event-card" data-event="farming" data-layer="scene/wild/event-card/farming">
-            <strong data-layer="scene/wild/event-card/farming/title">务农</strong>
-            <span data-layer="scene/wild/event-card/farming/desc">5秒，饱食+3~5，清洁-3</span>
-          </button>
-          <button class="event-card" data-event="camping" data-layer="scene/wild/event-card/camping">
-            <strong data-layer="scene/wild/event-card/camping/title">露营</strong>
-            <span data-layer="scene/wild/event-card/camping/desc">2分钟，主食+1，饱食+10</span>
-          </button>
-          <button class="event-card" data-event="travel" data-layer="scene/wild/event-card/travel">
-            <strong data-layer="scene/wild/event-card/travel/title">远行</strong>
-            <span data-layer="scene/wild/event-card/travel/desc">3分钟，大小+10mm</span>
-          </button>
-        </div>
-        <div class="wild-runner hidden" id="wildRunner" aria-hidden="true" data-layer="scene/wild/event-runner"></div>
-      </section>
-
-      <div class="wild-popup wild-gain-popup hidden" id="wildGainPopup" aria-live="polite" data-layer="popup/wild-gain">
-        <p class="wild-popup-title" data-layer="popup/wild-gain/title">活动完成</p>
-        <p class="wild-popup-body" id="wildGainBody" data-layer="popup/wild-gain/body"></p>
-      </div>
-      <div class="wild-popup wild-random-popup hidden" id="wildRandomPopup" aria-live="polite" data-layer="popup/wild-random">
-        <img class="wild-random-icon" id="wildRandomIcon" src="./assets/UI/item_4.png" alt="随机事件" data-layer="popup/wild-random/icon" />
-        <div class="wild-popup-content" data-layer="popup/wild-random/content">
-          <p class="wild-popup-title" data-layer="popup/wild-random/title">随机事件</p>
-          <p class="wild-popup-body" id="wildRandomBody" data-layer="popup/wild-random/body"></p>
-        </div>
+      <div class="team-list-wrap">
+        <button id="teamPrev" class="icon-btn" aria-label="上一页队伍">▲</button>
+        <div class="team-list" id="teamList"></div>
+        <button id="teamNext" class="icon-btn" aria-label="下一页队伍">▼</button>
       </div>
 
-      <section class="codex-panel hidden" id="codexPanel" data-layer="panel/codex/root">
-        <h2 data-layer="panel/codex/title">史莱姆日记</h2>
-        <div class="codex-grid" data-layer="panel/codex/grid">
-          <article class="codex-card codex-stage-card" data-layer="panel/codex/card/stage">
-            <h3 data-layer="panel/codex/card/stage/title">成长阶段</h3>
-            <p class="stage-name" id="codexStageName" data-layer="panel/codex/card/stage/name">幼生体</p>
-            <p class="stage-desc" id="codexStageDesc" data-layer="panel/codex/card/stage/desc">需要更多陪伴来成长。</p>
-            <div class="stage-progress" data-layer="panel/codex/card/stage/progress-track">
-              <div class="stage-progress-fill" id="codexStageBar" data-layer="panel/codex/card/stage/progress-fill"></div>
-            </div>
-            <p class="stage-next" id="codexStageNext" data-layer="panel/codex/card/stage/next">距下一阶段还差 0mm</p>
-          </article>
-          <article class="codex-card codex-events-card" data-layer="panel/codex/card/event-stats">
-            <h3 data-layer="panel/codex/card/event-stats/title">事件统计</h3>
-            <div class="event-stats" id="codexEventStats" data-layer="panel/codex/card/event-stats/list"></div>
-          </article>
-          <article class="codex-card codex-history-card" data-layer="panel/codex/card/history">
-            <h3 data-layer="panel/codex/card/history/title">历史事件</h3>
-            <ul class="history-list" id="codexHistoryList" data-layer="panel/codex/card/history/list"></ul>
-          </article>
-        </div>
-        <article class="codex-card codex-album" data-layer="panel/codex/card/album">
-          <h3 data-layer="panel/codex/card/album/title">相册</h3>
-          <div class="album-list" id="codexAlbumList" data-layer="panel/codex/card/album/list"></div>
-          <p class="adventure-title" data-layer="panel/codex/card/album/adventure-title">奇遇照片</p>
-          <div class="adventure-list" id="codexAdventureList" data-layer="panel/codex/card/album/adventure-list"></div>
-        </article>
-      </section>
+      <p id="teamPageIndicator" class="page-indicator">第 1 / 4 页</p>
+    </aside>
 
-      <section class="ai-theme-panel hidden" id="aiThemePanel" data-layer="panel/ai-theme/root">
-        <h3 class="ai-theme-title" data-layer="panel/ai-theme/title">Gemini UI 换肤</h3>
-        <p class="ai-theme-name" id="aiThemeName" data-layer="panel/ai-theme/theme-name">当前：默认主题</p>
-        <textarea
-          class="ai-theme-prompt"
-          id="aiThemePrompt"
-          maxlength="320"
-          placeholder="例如：做成薄荷冷灰玻璃风，按钮圆角更大，强调色偏橙黄。"
-          data-layer="panel/ai-theme/prompt-input"
-        ></textarea>
-        <p class="ai-theme-status" id="aiThemeStatus" data-layer="panel/ai-theme/status">输入描述后，点击“生成预览”。</p>
-        <div class="ai-theme-actions" data-layer="panel/ai-theme/actions">
-          <button class="ai-theme-action primary" id="aiThemeGenerateBtn" type="button" data-layer="panel/ai-theme/actions/generate-btn">生成预览</button>
-          <button class="ai-theme-action" id="aiThemeApplyBtn" type="button" data-layer="panel/ai-theme/actions/apply-btn">应用到游戏</button>
-          <button class="ai-theme-action" id="aiThemeResetBtn" type="button" data-layer="panel/ai-theme/actions/reset-btn">恢复默认</button>
-          <button class="ai-theme-action" id="aiThemeCloseBtn" type="button" data-layer="panel/ai-theme/actions/close-btn">关闭</button>
+    <main class="panel bag-panel">
+      <header class="bag-header">
+        <div>
+          <p class="panel-sub">精灵背包</p>
+          <h2>5 × 6 精灵槽位</h2>
         </div>
-      </section>
+        <p id="bagPageIndicator" class="page-indicator">第 1 / 3 页（30/页）</p>
+      </header>
 
-      <section class="water-setting-modal hidden" id="waterSettingModal" role="dialog" aria-modal="true" aria-label="喝水提醒设置" data-layer="overlay/water-setting/modal">
-        <div class="water-setting-panel" data-layer="overlay/water-setting/modal/panel">
-          <p class="water-setting-title" data-layer="overlay/water-setting/modal/panel/title">设置</p>
-          <p class="water-setting-subtitle" data-layer="overlay/water-setting/modal/panel/subtitle">喝水间隔提醒</p>
-          <div class="water-setting-options" id="waterSettingOptions" role="radiogroup" aria-label="喝水提醒时间选项" data-layer="overlay/water-setting/modal/panel/options">
-            <button class="water-setting-option" id="waterSettingOpt10" type="button" role="radio" aria-checked="false" data-minutes="10" data-layer="overlay/water-setting/modal/panel/options/10min">
-              <span class="water-setting-check" aria-hidden="true"></span>
-              <span class="water-setting-option-text">10分钟</span>
-            </button>
-            <button class="water-setting-option" id="waterSettingOpt30" type="button" role="radio" aria-checked="true" data-minutes="30" data-layer="overlay/water-setting/modal/panel/options/30min">
-              <span class="water-setting-check" aria-hidden="true"></span>
-              <span class="water-setting-option-text">30分钟</span>
-            </button>
-            <button class="water-setting-option" id="waterSettingOpt60" type="button" role="radio" aria-checked="false" data-minutes="60" data-layer="overlay/water-setting/modal/panel/options/60min">
-              <span class="water-setting-check" aria-hidden="true"></span>
-              <span class="water-setting-option-text">60分钟</span>
-            </button>
-          </div>
-          <div class="water-setting-footer" data-layer="overlay/water-setting/modal/panel/footer">
-            <button class="water-setting-action water-setting-cancel" id="waterSettingCancelBtn" type="button" data-layer="overlay/water-setting/modal/panel/footer/cancel">取消</button>
-            <button class="water-setting-action water-setting-confirm" id="waterSettingConfirmBtn" type="button" data-layer="overlay/water-setting/modal/panel/footer/confirm">确定</button>
-          </div>
-        </div>
-      </section>
+      <div class="bag-actions-top">
+        <button id="bagPrev" class="icon-btn" aria-label="上一页背包">上一页</button>
+        <button id="bagNext" class="icon-btn" aria-label="下一页背包">下一页</button>
+      </div>
 
-      <section class="adventure-modal hidden" id="adventureModal" role="dialog" aria-modal="true" aria-label="奇遇照片详情" data-layer="overlay/adventure/modal">
-        <div class="adventure-modal-panel" id="adventureModalPanel" data-layer="overlay/adventure/modal/panel">
-          <div class="adventure-modal-image-wrap" data-layer="overlay/adventure/modal/panel/image-wrap">
-            <img class="adventure-modal-image" id="adventureModalImage" src="./assets/codex_album/story01.png" alt="奇遇照片" draggable="false" data-layer="overlay/adventure/modal/panel/image" />
-          </div>
-          <p class="adventure-modal-title" id="adventureModalTitle" data-layer="overlay/adventure/modal/panel/title">奇遇事件</p>
-          <p class="adventure-modal-story" id="adventureModalStory" data-layer="overlay/adventure/modal/panel/story"></p>
-        </div>
-        <p class="adventure-modal-tip" data-layer="overlay/adventure/modal/tip">点击空白区域关闭</p>
-      </section>
+      <section class="bag-grid" id="bagGrid" aria-label="精灵背包网格"></section>
 
-      <footer class="bottom-bar" data-layer="footer/bottom-bar">
-        <button class="scene-toggle" id="sceneToggleBtn" aria-label="外出" data-layer="footer/bottom-bar/scene-toggle-btn"></button>
-        <button class="ai-theme-btn" id="aiThemeBtn" type="button" data-layer="footer/bottom-bar/ai-theme-btn">AI换肤</button>
-        <button class="sound-btn hidden" id="soundBtn" type="button" data-layer="footer/bottom-bar/sound-btn">音效 开</button>
-        <div class="mode-switch" id="modeSwitch" data-layer="footer/bottom-bar/mode-switch">
-          <button class="mode-btn" data-mode="codex" type="button" data-layer="footer/bottom-bar/mode-switch/codex-btn">日记</button>
-          <button class="mode-btn active" data-mode="observe" type="button" data-layer="footer/bottom-bar/mode-switch/observe-btn">观察</button>
-        </div>
+      <footer class="bag-footer">
+        <button id="toggleBoxBtn" class="cta-btn">打开盒子面板（Dockable Panel_box）</button>
       </footer>
-      <button class="gm-btn gm-row-1 hidden" id="gmItem1Btn" type="button" data-layer="debug/gm/item1-plus-btn">GM item1(水果)+1</button>
-      <button class="gm-btn gm-row-2 hidden" id="gmItem2Btn" type="button" data-layer="debug/gm/item2-plus-btn">GM item2(主食)+1</button>
-      <button class="gm-btn gm-row-3 hidden" id="gmItem3Btn" type="button" data-layer="debug/gm/item3-plus-btn">GM item3(饮料)+1</button>
-      <button class="gm-btn gm-row-4 hidden" id="gmHealthMinusBtn" type="button" data-layer="debug/gm/health-minus-btn">GM 健康值-10</button>
-      <button class="gm-btn gm-row-5 hidden" id="gmSatietyMinusBtn" type="button" data-layer="debug/gm/satiety-minus-btn">GM 饱食度-10</button>
-      <button class="gm-btn gm-row-6 hidden" id="gmIntimacyMinusBtn" type="button" data-layer="debug/gm/intimacy-minus-btn">GM 亲密度-5</button>
-      <button class="gm-btn gm-row-7 hidden" id="gmCleanseItemBtn" type="button" data-layer="debug/gm/soap-item-plus-btn">GM 洗澡道具(肥皂)+1</button>
-      <button class="gm-btn gm-row-8 hidden" id="gmOpenWaterGameBtn" type="button" data-layer="debug/gm/open-water-game-btn">GM 打开喝水小游戏</button>
-      <button class="gm-btn gm-row-9 hidden" id="gmResetDay1Btn" type="button" data-layer="debug/gm/reset-day1-btn">GM 重置回初始(第1天)</button>
-      <button class="gm-btn gm-row-10 hidden" id="gmSizePlus1000Btn" type="button" data-layer="debug/gm/size-plus-1000-btn">GM 增加大小+1000</button>
     </main>
+
+    <section class="panel role-panel" id="rolePanel">
+      <button id="closeRoleBtn" class="close-btn" aria-label="关闭角色展示">✕</button>
+
+      <div class="role-display" id="roleDisplay">
+        <div class="role-image" id="roleImage" aria-hidden="true"></div>
+        <div class="role-meta">
+          <p class="panel-sub">默认展示</p>
+          <h3 id="roleName">未选择精灵</h3>
+          <p id="roleDesc">请选择一个精灵槽位查看详情。默认展示第一只已选中精灵。</p>
+        </div>
+      </div>
+
+      <div class="dock-toggle-wrap" id="dockToggleWrap">
+        <button id="btnOpen" class="open-btn" aria-expanded="false">
+          <span>⟷</span>
+          <strong>btn_open</strong>
+        </button>
+      </div>
+
+      <div class="dock-panel" id="dockRolePanel" aria-hidden="true">
+        <div class="dock-content">
+          <h4>Dockable Panel_role</h4>
+          <p id="dockText">详细信息面板，包含精灵属性、技能、关系链。</p>
+          <ul>
+            <li>元素：奥术 / 星辉</li>
+            <li>稀有度：SSR</li>
+            <li>状态：待命</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="box-panel" id="boxPanel" aria-hidden="true">
+        <h4>Dockable Panel_box</h4>
+        <p>盒子面板已展开。这里可放置扩展库存、筛选器与拖拽逻辑。</p>
+        <button id="collapseBoxBtn" class="collapse-btn">收起</button>
+      </div>
+    </section>
   </div>
 
-  <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
-  <script src="./assets/config/speech-config.generated.js"></script>
-  <script src="game.js"></script>
+  <script src="prototype.js"></script>
 </body>
 </html>
